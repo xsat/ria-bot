@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\Entity\Realty;
 use App\Repository\RealtyRepository;
-use App\Service\Contract\RealtyServiceInterface;
+use App\Telegram\BotApi;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +18,7 @@ class ParserRiaSearchCommand extends Command
 {
     private ClientInterface $client;
 
-    private RealtyServiceInterface $realtyService;
+    private BotApi $botApi;
 
     private RealtyRepository $realtyRepository;
 
@@ -26,12 +26,12 @@ class ParserRiaSearchCommand extends Command
 
     public function __construct(
         ClientInterface $client,
-        RealtyServiceInterface $realtyService,
+        BotApi $botApi,
         RealtyRepository $realtyRepository,
         EntityManagerInterface $entityManager,
     ) {
         $this->client = $client;
-        $this->realtyService = $realtyService;
+        $this->botApi = $botApi;
         $this->realtyRepository = $realtyRepository;
         $this->entityManager = $entityManager;
 
@@ -69,8 +69,9 @@ class ParserRiaSearchCommand extends Command
 
                 $realty = Realty::buildFromResponse($response);
 
-                var_dump($realty);exit;
-                $this->entityManager->persist($realty);
+                if ($this->botApi->sendRealty($realty)) {
+                    $this->entityManager->persist($realty);
+                }
             }
         }
 
