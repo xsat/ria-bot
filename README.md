@@ -2,6 +2,9 @@
 
 Publish new offers from https://dom.ria.com/ website to your telegram channel
 
+**Example of offer:**
+![Offer Example](offer_example.png)
+
 ## How To Setup
 
 1. Copy file `.env.example` to `.env`
