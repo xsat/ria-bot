@@ -6,9 +6,7 @@ namespace App\Telegram;
 
 use App\Entity\Realty;
 use GuzzleHttp\ClientInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 class BotApi
 {
@@ -32,27 +30,43 @@ class BotApi
         }
 
         $data = $realty->getData();
+        $items = [];
 
-        $caption = "<b>Ціна</b>: {$data['currency_type_uk']}{$data['price']}
+        if (!empty($data['currency_type_uk']) && !empty($data['price'])) {
+            $items[] = "<b>Ціна</b>: {$data['currency_type_uk']}{$data['price']}";
+        }
 
-<b>Дата</b>: {$data['publishing_date']}
+        if (!empty($data['publishing_date'])) {
+            $items[] = "<b>Дата</b>: {$data['publishing_date']}";
+        }
 
-<b>Область</b>: {$data['state_name_uk']}
+        if (!empty($data['district_name_uk'])) {
+            $items[] = "<b>Область</b>: {$data['district_name_uk']}";
+        }
 
-<b>Район</b>: {$data['district_name_uk']}
+        if (!empty($data['state_name_uk'])) {
+            $items[] = "<b>Район</b>: {$data['state_name_uk']}";
+        }
 
-<b>Місто</b>: {$data['city_name_uk']}
+        if (!empty($data['city_name_uk'])) {
+            $items[] = "<b>Місто</b>: {$data['city_name_uk']}";
+        }
 
-{$data['description_uk']}
+        if (!empty($data['description_uk'])) {
+            $items[] = $data['description_uk'];
+        }
 
-<a href='https://dom.ria.com/uk/{$data['beautiful_url']}'>Подивитися на сайті</a>";
+        if (!empty($data['beautiful_url'])) {
+            $items[] = "<a href=\"https://dom.ria.com/uk/{$data['beautiful_url']}\">Подивитися на сайті</a>";
+        }
 
-        return Response::HTTP_OK === $this->client->post(
+        return
+            Response::HTTP_OK === $this->client->post(
                 "https://api.telegram.org/bot{$this->token}/sendPhoto",
                 [
                     'json' => [
                         'chat_id' => $this->chatId,
-                        'caption' => $caption,
+                        'caption' => implode(PHP_EOL . PHP_EOL, $items),
                         'parse_mode' => 'HTML',
                         'photo' => 'https://cdn.riastatic.com/photos/' .
                             str_replace(
